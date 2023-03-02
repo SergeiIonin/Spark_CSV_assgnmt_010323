@@ -1,6 +1,6 @@
 import cats.effect.{Resource, Sync}
 import com.typesafe.config.Config
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
 class SparkCSVLocalServiceImpl[F[_] : Sync](sparkSession: SparkSession,
                                inputPath: String, outputPath: String) extends SparkCSVService[F] {
@@ -12,7 +12,7 @@ class SparkCSVLocalServiceImpl[F[_] : Sync](sparkSession: SparkSession,
 
     val contentFiltered = filterDataFrame(dataFrame)
 
-    sparkSession.createDataFrame(contentFiltered).write.csv(outputPath)
+    sparkSession.createDataFrame(contentFiltered).write.mode(SaveMode.Overwrite).csv(outputPath)
   }
 
   override def close(): F[Unit] = Sync[F].pure(sparkSession.close())

@@ -21,7 +21,6 @@ class SparkCSVServiceSpec extends AnyFlatSpec with Matchers {
     val outputPath = config.getString("output-path") // "src/test/resources/data/output/csv"
 
     clearAllFiles(inputPath)
-    clearDirAndAllFiles(outputPath)
 
     SparkCSVServiceSpec.generateFiles(inputPath)
 
@@ -38,11 +37,6 @@ class SparkCSVServiceSpec extends AnyFlatSpec with Matchers {
       val files: List[Path] = Files.list(Path.of(outputPath)).collect(collector).asScala.toList
       files.filter(p => p.toFile.getName.endsWith(".csv")).head
     }
-
-/*    val fls = {
-      val collector: Collector[Path, _, util.List[Path]] = Collectors.toList()
-      Files.list(Path.of(outputPath)).collect(collector).asScala.toList
-    }*/
 
     val fileOutContent = Files.readAllLines(outputFile).asScala.toList
 
@@ -64,18 +58,6 @@ object SparkCSVServiceSpec {
       val collector: Collector[Path, _, util.List[Path]] = Collectors.toList()
       val paths: List[Path] = Files.list(Path.of(uri)).collect(collector).asScala.toList
       paths.foreach(Files.deleteIfExists)
-    } else ()
-  }
-
-  def clearDirAndAllFiles(uri: String): Unit = {
-    if (Files.exists(Path.of(uri))) {
-      val collector: Collector[Path, _, util.List[Path]] = Collectors.toList()
-      val paths: List[Path] = Files.list(Path.of(uri)).collect(collector).asScala.toList
-      val parent = Path.of(uri)
-      val parentParent = parent.getParent
-      paths.foreach(Files.deleteIfExists)
-      Files.delete(parent)
-      Files.delete(parentParent)
     } else ()
   }
 
