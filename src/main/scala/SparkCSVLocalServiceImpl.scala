@@ -8,6 +8,8 @@ class SparkCSVLocalServiceImpl[F[_] : Sync](sparkSession: SparkSession,
     val dataFrame: DataFrame = sparkSession.read
       .format("text")
       .option("InferSchema", "true")
+      .option("nullValue", "0")
+      .option("header", "true")
       .load(inputPath)
 
     val contentFiltered = filterDataFrame(dataFrame)

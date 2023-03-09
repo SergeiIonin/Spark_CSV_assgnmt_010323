@@ -1,4 +1,4 @@
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, Encoder, Row, SparkSession}
 
 import scala.jdk.CollectionConverters.IteratorHasAsScala
 
@@ -24,7 +24,16 @@ trait SparkCSVService[F[_]] {
     }
   }
 
-  protected def filterDataFrame(dataFrame: DataFrame): LazyList[(String, String)] = {
+  protected def filteredDataFrame(dataFrame: DataFrame)(implicit e1: Encoder[(Int, Int)], e2: Encoder[Int]) = {
+    val ds: Dataset[(Int, Int)] = dataFrame.as[(Int, Int)]
+    val a = ds.groupByKey {
+      case (k, v) => k
+    }.reduceGroups {
+      case (k1 -> v1, _ -> v2) => (k1, v1 + v2)
+    }
+  }
+
+    protected def filterDataFrame(dataFrame: DataFrame): LazyList[(String, String)] = {
     val content = LazyList.from(LazyList.from(dataFrame.toLocalIterator().asScala).map(separateRowIntoKV)
       .groupMapReduce(_._1) {
         case _ -> v => v -> 1

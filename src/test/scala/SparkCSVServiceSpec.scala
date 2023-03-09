@@ -1,4 +1,4 @@
-import SparkCSVServiceSpec.{clearAllFiles, clearDirAndAllFiles, expectedOutput}
+import SparkCSVServiceSpec.{clearAllFiles, expectedOutput}
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import com.typesafe.config.ConfigFactory
