@@ -10,6 +10,8 @@ import org.apache.spark.sql.{Row, SparkSession}
 class SparkCSVs3ServiceImpl[F[_] : Sync](sparkSession: SparkSession,
                             inputS3Path: String, outputPath: String) extends SparkCSVService[F] {
 
+  import sparkSession.implicits._
+
   sparkSession.sparkContext
     .hadoopConfiguration.set("fs.s3a.access.key", System.getenv("AWS_ACCESS_KEY_ID"))
   sparkSession.sparkContext
@@ -23,11 +25,12 @@ class SparkCSVs3ServiceImpl[F[_] : Sync](sparkSession: SparkSession,
 
     val file: RDD[String] = sparkSession.sparkContext.textFile(inputS3Path)
 
-    val dataFrame = sparkSession.createDataFrame(file.map(Row(_)), StructType(List(StructField("text", StringType, false))))
+    val dataFrame = sparkSession.createDataFrame(file.map(Row(_)),
+      StructType(List(StructField("text", StringType, false)))).as[String]
 
-    val contentFiltered = filterDataFrame(dataFrame)
+    val dataframe = filterDataSet(dataFrame)
 
-    sparkSession.createDataFrame(contentFiltered).write.csv(outputPath)
+    dataframe.write.csv(outputPath)
   }
 
   override def close(): F[Unit] = Sync[F].pure(sparkSession.close())

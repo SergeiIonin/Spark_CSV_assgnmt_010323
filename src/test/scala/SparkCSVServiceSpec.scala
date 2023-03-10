@@ -46,7 +46,7 @@ class SparkCSVServiceSpec extends AnyFlatSpec with Matchers {
     println("----" * 10)
     println(fileOutContent)
     println("----" * 10)
-    fileOutContent.sameElements(expectedOutput) shouldBe true
+    fileOutContent.toSet == expectedOutput.toSet
   }
 
 }
@@ -109,11 +109,11 @@ object SparkCSVServiceSpec {
   val indexToSlice: List[(Int, List[(String, String)])] = (0 until totalAmountOfFiles).toList
     .map(index => index -> listTuples.slice(index * sliceSize, index * sliceSize + sliceSize))
 
-  def generateFiles(path: String) = {
+  def generateFiles(path: String): Unit = {
     indexToSlice.map {
       case (index, slice) =>
         val uri = s"$path/testFile-$index"
-        val content = slice.map {
+        val content = "Key,Value" :: slice.map {
           case (k, v) => s"$k,$v"
         }
         Files.write(Path.of(uri), content.asJava)

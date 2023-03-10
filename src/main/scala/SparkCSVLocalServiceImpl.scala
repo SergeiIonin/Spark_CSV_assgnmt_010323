@@ -4,17 +4,19 @@ import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
 class SparkCSVLocalServiceImpl[F[_] : Sync](sparkSession: SparkSession,
                                inputPath: String, outputPath: String) extends SparkCSVService[F] {
+  import sparkSession.implicits._
+
   override def process(): F[Unit] = Sync[F].pure {
-    val dataFrame: DataFrame = sparkSession.read
+    val dataSet = sparkSession.read
       .format("text")
-      .option("InferSchema", "true")
-      .option("nullValue", "0")
+      .option("InferSchema", "false")
       .option("header", "true")
       .load(inputPath)
+      .as[String]
 
-    val contentFiltered = filterDataFrame(dataFrame)
+    val dataframe: DataFrame = filterDataSet(dataSet)
 
-    sparkSession.createDataFrame(contentFiltered).write.mode(SaveMode.Overwrite).csv(outputPath)
+    dataframe.write.mode(SaveMode.Overwrite).csv(outputPath)
   }
 
   override def close(): F[Unit] = Sync[F].pure(sparkSession.close())
